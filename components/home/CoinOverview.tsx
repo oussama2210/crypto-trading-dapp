@@ -1,5 +1,6 @@
 import React from 'react';
 import { fetcher } from '@/lib/coingecko.actions';
+import { getBinanceOHLC } from '@/lib/binance_api';
 import Image from 'next/image';
 import { formatCurrency } from '@/lib/utils';
 import { CoinOverviewFallback } from './fallback';
@@ -7,17 +8,8 @@ import CandlestickChart from '@/components/CandlestickChart';
 
 const CoinOverview = async () => {
     try {
-        const [coin, coinOHLCData] = await Promise.all([
-            fetcher<CoinDetailsData>('/coins/bitcoin', {
-                dex_pair_format: 'symbol',
-            }),
-            fetcher<OHLCData[]>('/coins/bitcoin/ohlc', {
-                vs_currency: 'usd',
-                days: 1,
-                interval: 'hourly',
-                precision: 'full',
-            }),
-        ]);
+        const coin = await fetcher<CoinDetailsData>('/coins/bitcoin');
+        const coinOHLCData = await getBinanceOHLC('btc', 1);
 
         return (
             <div id="coin-overview">

@@ -1,0 +1,13 @@
+{
+    "mcpServers": {
+        "filesystem": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-filesystem",
+                "C:\\Users\\Dz1634\\Desktop\\crypto-app\\ceypto",
+                "C:\\Users\\Dz1634\\Desktop\\crypto-app\\ceypto"
+            ]
+        }
+    }
+}

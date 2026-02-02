@@ -13,10 +13,11 @@ export async function fetcher<T>(
     params?: QueryParams,
     revalidate = 60,
 ): Promise<T> {
-    const url = qs.stringifyUrl({
-        url: `${BASE_URL}${endpoint}`,
-        query: params,
-    },
+    const url = qs.stringifyUrl(
+        {
+            url: `${BASE_URL}/${endpoint}`,
+            query: params,
+        },
         { skipEmptyString: true, skipNull: true },
     );
 
@@ -29,10 +30,50 @@ export async function fetcher<T>(
     });
 
     if (!response.ok) {
+        if (response.status === 429) {
+            console.warn('Rate limited by CoinGecko, retrying in 1s...');
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            return fetcher(endpoint, params, revalidate);
+        }
+
         const errorBody: CoinGeckoErrorBody = await response.json().catch(() => ({}));
 
         throw new Error(`API Error: ${response.status}: ${errorBody.error || response.statusText} `);
     }
 
     return response.json();
+}
+
+export async function getPools(
+    id: string,
+    network?: string | null,
+    contractAddress?: string | null,
+): Promise<PoolData> {
+    const fallback: PoolData = {
+        id: '',
+        address: '',
+        name: '',
+        network: '',
+    };
+
+    if (network && contractAddress) {
+        try {
+            const poolData = await fetcher<{ data: PoolData[] }>(
+                `/onchain/networks/${network}/tokens/${contractAddress}/pools`,
+            );
+
+            return poolData.data?.[0] ?? fallback;
+        } catch (error) {
+            console.log(error);
+            return fallback;
+        }
+    }
+
+    try {
+        const poolData = await fetcher<{ data: PoolData[] }>('/onchain/search/pools', { query: id });
+
+        return poolData.data?.[0] ?? fallback;
+    } catch {
+        return fallback;
+    }
 }
