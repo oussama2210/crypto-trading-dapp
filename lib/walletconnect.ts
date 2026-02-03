@@ -1,7 +1,12 @@
 // lib/walletkit.js
 import { Core } from "@walletconnect/core";
 import { WalletKit } from "@reown/walletkit";
-import { buildApprovedNamespaces, getSdkError } from "@walletconnect/utils";
+import {
+    buildApprovedNamespaces,
+    getSdkError,
+    populateAuthPayload,
+    buildAuthObject
+} from "@walletconnect/utils";
 
 const core = new Core({
     projectId: process.env.PROJECT_ID,
@@ -10,12 +15,19 @@ const core = new Core({
 const walletKit = await WalletKit.init({
     core,
     metadata: {
-        name: "Demo app",
+        name: "Demo Wallet",
         description: "Demo Client as Wallet/Peer",
         url: "https://reown.com/walletkit",
         icons: [],
     },
 });
+
+async function yourSigningFunction(params: any) {
+    // This is a placeholder. In a real app, you would use a private key to sign the data.
+    console.log("Signing data:", params);
+    return "0xmock_signature";
+}
+
 
 // Handle session proposals
 walletKit.on("session_proposal", async ({ id, params }) => {
@@ -34,23 +46,45 @@ walletKit.on("session_proposal", async ({ id, params }) => {
                 },
             },
         });
-
         await walletKit.approveSession({ id, namespaces: approvedNamespaces });
     } catch (error) {
-        await walletKit.rejectSession({
-            id,
-            reason: getSdkError("USER_REJECTED"),
-        });
+        await walletKit.rejectSession({ id, reason: getSdkError("USER_REJECTED") });
     }
 });
 
-// Handle session requests (signing, transactions)
+// Handle One-Click Auth (SIWE authentication)
+walletKit.on("session_authenticate", async (payload) => {
+    const supportedChains = ["eip155:1", "eip155:137"];
+    const supportedMethods = ["personal_sign", "eth_sendTransaction"];
+
+    const authPayload = populateAuthPayload({
+        authPayload: payload.params.authPayload,
+        chains: supportedChains,
+        methods: supportedMethods,
+    });
+
+    const iss = `eip155:1:0xYourWalletAddress`;
+    const message = walletKit.formatAuthMessage({ request: authPayload, iss });
+
+    // Sign the message with your wallet
+    const signature = await yourSigningFunction(message);
+
+    const auth = buildAuthObject(
+        authPayload,
+        { t: "eip191", s: signature },
+        iss
+    );
+
+    await walletKit.approveSessionAuthenticate({
+        id: payload.id,
+        auths: [auth],
+    });
+});
+
+// Handle session requests
 walletKit.on("session_request", async (event) => {
     const { topic, params, id } = event;
-    const { request } = params;
-
-    // Sign the message with your wallet logic
-    const signedMessage = await yourSigningFunction(request.params);
+    const signedMessage = await yourSigningFunction(params.request.params);
 
     await walletKit.respondSessionRequest({
         topic,
@@ -58,8 +92,8 @@ walletKit.on("session_request", async (event) => {
     });
 });
 
-// Pair with dapp using URI from QR code
-export async function pair(uri) {
+// Pair with dapp
+export async function pair(uri: string) {
     await walletKit.pair({ uri });
 }
 

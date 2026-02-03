@@ -1,3 +1,5 @@
+'use server';
+
 import { PERIOD_CONFIG } from '@/constants';
 
 export async function getBinanceOHLC(symbol: string, days: number | string): Promise<OHLCData[]> {
@@ -38,7 +40,8 @@ export async function getBinanceOHLC(symbol: string, days: number | string): Pro
         );
 
         if (!response.ok) {
-            console.error(`Binance API Error: ${response.status} ${response.statusText}`);
+            const errorData = await response.json().catch(() => ({}));
+            console.warn(`Binance API ${response.status} for ${pair}: ${errorData.msg || response.statusText}`);
             return [];
         }
 
@@ -54,5 +57,26 @@ export async function getBinanceOHLC(symbol: string, days: number | string): Pro
     } catch (error) {
         console.error('Error fetching Binance OHLC:', error);
         return [];
+    }
+}
+
+export async function getBinanceTicker(symbol: string) {
+    if (!symbol) return null;
+    const pair = `${symbol.toUpperCase()}USDT`;
+
+    try {
+        const response = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${pair}`, {
+            next: { revalidate: 60 },
+        });
+
+        if (!response.ok) {
+            console.warn(`Binance Ticker API ${response.status} for ${pair}`);
+            return null;
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching Binance ticker:', error);
+        return null;
     }
 }

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { cn } from "@/lib/utils"
+import { WalletConnectButton } from "./WalletConnectButton"
 export default function Header() {
     const path = usePathname();
     return (
@@ -19,7 +20,7 @@ export default function Header() {
                         <Link href="/news" className={cn('nav-link', { 'is-active': path === '/news' })}>News</Link>
                         <Link href="/portfolio" className={cn('nav-link', { 'is-active': path === '/portfolio' })}>Portfolio</Link>
                         <Link href="/settings" className={cn('nav-link', { 'is-active': path === '/settings' })}>Settings</Link>
-
+                        <WalletConnectButton />
                     </nav>
                 </div>
             </div>

@@ -248,14 +248,14 @@ interface Category {
     volume_24h: number;
 }
 
-interface UseCoinGeckoWebSocketProps {
+interface UseBinanceWebSocketProps {
     coinId: string;
     poolId: string;
     liveInterval?: '1s' | '1m';
     symbol?: string;
 }
 
-interface UseCoinGeckoWebSocketReturn {
+interface UseBinanceWebSocketReturn {
     price: ExtendedPriceData | null;
     trades: Trade[];
     ohlcv: OHLCData | null;

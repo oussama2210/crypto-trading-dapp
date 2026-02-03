@@ -16,6 +16,7 @@
     "@reown/walletkit": "^1.5.0",
     "@walletconnect/core": "^2.23.4",
     "@walletconnect/utils": "^2.23.4",
+    "@walletconnect/web3wallet": "^1.16.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lightweight-charts": "^5.1.0",

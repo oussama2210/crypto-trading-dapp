@@ -1,67 +1,93 @@
 import React from 'react';
-import { fetcher, getPools } from '@/lib/coingecko.actions';
-import { getBinanceOHLC } from '@/lib/binance_api';
+import { getBinanceOHLC, getBinanceTicker } from '@/lib/binance_api';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import LiveDataWrapper from '@/components/LiveDataWrapper';
 import Converter from '@/components/Converter';
 
+const COIN_MAPPING: Record<string, string> = {
+    'bitcoin': 'BTC',
+    'ethereum': 'ETH',
+    'tether': 'USDT',
+    'binancecoin': 'BNB',
+    'solana': 'SOL',
+    'ripple': 'XRP',
+    'cardano': 'ADA',
+    'dogecoin': 'DOGE',
+};
+
 const Page = async ({ params }: NextPageProps) => {
     const { id } = await params;
+    const symbol = COIN_MAPPING[id.toLowerCase()] || id.toUpperCase();
 
-    const coinData = await fetcher<CoinDetailsData>(`/coins/${id}`, {
-        dex_pair_format: 'contract_address',
-    });
+    // Fetch Binance Data
+    const [tickerData, coinOHLCData] = await Promise.all([
+        getBinanceTicker(symbol),
+        getBinanceOHLC(symbol, 1),
+    ]);
 
-    const coinOHLCData = await getBinanceOHLC(coinData.symbol, 1);
-
-    const platform = coinData.asset_platform_id
-        ? coinData.detail_platforms?.[coinData.asset_platform_id]
-        : null;
-    const network = platform?.geckoterminal_url.split('/')[3] || null;
-    const contractAddress = platform?.contract_address || null;
-
-    const pool = await getPools(id, network, contractAddress);
+    // Synthesize coinData from Binance ticker
+    const coinData: CoinDetailsData = {
+        id: id.toLowerCase(),
+        symbol: symbol,
+        name: symbol, // Binance doesn't provide full names, using symbol as name
+        image: {
+            large: tickerData ? `https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/${symbol.toLowerCase()}.png` : '/logo.png',
+            small: tickerData ? `https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/${symbol.toLowerCase()}.png` : '/logo.png',
+        },
+        market_data: {
+            current_price: { usd: tickerData ? parseFloat(tickerData.lastPrice) : 0 },
+            price_change_24h_in_currency: { usd: tickerData ? parseFloat(tickerData.priceChange) : 0 },
+            price_change_percentage_24h_in_currency: { usd: tickerData ? parseFloat(tickerData.priceChangePercent) : 0 },
+            price_change_percentage_30d_in_currency: { usd: 0 },
+            market_cap: { usd: 0 },
+            total_volume: { usd: tickerData ? parseFloat(tickerData.quoteVolume) : 0 },
+        },
+        market_cap_rank: 0,
+        description: { en: '' },
+        links: {
+            homepage: [],
+            blockchain_site: [],
+            subreddit_url: '',
+        },
+        tickers: [],
+    };
 
     const coinDetails = [
         {
-            label: 'Market Cap',
-            value: formatCurrency(coinData.market_data.market_cap.usd),
+            label: '24h High',
+            value: tickerData ? formatCurrency(parseFloat(tickerData.highPrice)) : '-',
         },
         {
-            label: 'Market Cap Rank',
-            value: `# ${coinData.market_cap_rank}`,
+            label: '24h Low',
+            value: tickerData ? formatCurrency(parseFloat(tickerData.lowPrice)) : '-',
         },
         {
-            label: 'Total Volume',
-            value: formatCurrency(coinData.market_data.total_volume.usd),
+            label: '24h Volume',
+            value: tickerData ? formatCurrency(parseFloat(tickerData.quoteVolume)) : '-',
         },
         {
-            label: 'Website',
-            value: '-',
-            link: coinData.links.homepage[0],
-            linkText: 'Homepage',
+            label: 'Price Change',
+            value: tickerData ? `${tickerData.priceChangePercent}%` : '-',
         },
         {
-            label: 'Explorer',
-            value: '-',
-            link: coinData.links.blockchain_site[0],
-            linkText: 'Explorer',
+            label: 'Trading Pair',
+            value: `${symbol}/USDT`,
         },
         {
-            label: 'Community',
-            value: '-',
-            link: coinData.links.subreddit_url,
-            linkText: 'Community',
+            label: 'Source',
+            value: 'Binance API',
         },
     ];
+
+    const pool = { id: '', address: '', name: '', network: '' };
 
     return (
         <main id="coin-details-page">
             <section className="primary">
                 <LiveDataWrapper coinId={id} poolId={pool.id} coin={coinData} coinOHLCData={coinOHLCData}>
-                    <h4>Exchange Listings</h4>
+                    <h4>Market Activity</h4>
                 </LiveDataWrapper>
             </section>
 
@@ -73,23 +99,13 @@ const Page = async ({ params }: NextPageProps) => {
                 />
 
                 <div className="details">
-                    <h4>Coin Details</h4>
+                    <h4>Market Statistics</h4>
 
                     <ul className="details-grid">
-                        {coinDetails.map(({ label, value, link, linkText }, index) => (
+                        {coinDetails.map(({ label, value }, index) => (
                             <li key={index}>
                                 <p className={label}>{label}</p>
-
-                                {link ? (
-                                    <div className="link">
-                                        <Link href={link} target="_blank">
-                                            {linkText || label}
-                                        </Link>
-                                        <ArrowUpRight size={16} />
-                                    </div>
-                                ) : (
-                                    <p className="text-base font-medium">{value}</p>
-                                )}
+                                <p className="text-base font-medium">{value}</p>
                             </li>
                         ))}
                     </ul>
