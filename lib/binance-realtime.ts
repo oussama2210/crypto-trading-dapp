@@ -1,6 +1,8 @@
 'use server';
 
 const BINANCE_API_URL = 'https://api.binance.com/api/v3';
+const BINANCE_US_API_URL = 'https://api.binance.us/api/v3';
+
 
 export interface BinanceTicker {
     symbol: string;
@@ -69,9 +71,15 @@ export async function getMultipleTickers(symbols: string[] = TOP_SYMBOLS): Promi
         const targetSymbols = symbols.map(s => `${s.toUpperCase()}USDT`);
         const query = `?symbols=${encodeURIComponent(JSON.stringify(targetSymbols))}`;
 
-        const response = await fetch(`${BINANCE_API_URL}/ticker/24hr${query}`, {
+        let response = await fetch(`${BINANCE_API_URL}/ticker/24hr${query}`, {
             next: { revalidate: 10 },
         });
+
+        if (response.status === 451) {
+            response = await fetch(`${BINANCE_US_API_URL}/ticker/24hr${query}`, {
+                next: { revalidate: 10 },
+            });
+        }
 
         if (!response.ok) {
             console.error('Binance API error:', response.status);
@@ -118,9 +126,15 @@ export async function getTopCoins(limit: number = 12): Promise<TopCoin[]> {
  */
 export async function getTrendingCoins(limit: number = 10): Promise<TopCoin[]> {
     try {
-        const response = await fetch(`${BINANCE_API_URL}/ticker/24hr`, {
+        let response = await fetch(`${BINANCE_API_URL}/ticker/24hr`, {
             cache: 'no-store', // Disable cache for large response (> 2MB)
         });
+
+        if (response.status === 451) {
+            response = await fetch(`${BINANCE_US_API_URL}/ticker/24hr`, {
+                cache: 'no-store',
+            });
+        }
 
         if (!response.ok) {
             return [];
@@ -167,9 +181,15 @@ export async function getTrendingCoins(limit: number = 10): Promise<TopCoin[]> {
  */
 export async function getTopLosers(limit: number = 10): Promise<TopCoin[]> {
     try {
-        const response = await fetch(`${BINANCE_API_URL}/ticker/24hr`, {
+        let response = await fetch(`${BINANCE_API_URL}/ticker/24hr`, {
             cache: 'no-store', // Disable cache for large response (> 2MB)
         });
+
+        if (response.status === 451) {
+            response = await fetch(`${BINANCE_US_API_URL}/ticker/24hr`, {
+                cache: 'no-store',
+            });
+        }
 
         if (!response.ok) {
             return [];

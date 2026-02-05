@@ -6,21 +6,40 @@
  */
 
 const BINANCE_API_BASE = 'https://api.binance.com/api/v3';
+const BINANCE_US_API_BASE = 'https://api.binance.us/api/v3';
+
 const COINGECKO_API_BASE = process.env.COINGECKO_BASE_URL;
 const COINGECKO_API_KEY = process.env.COINGECKO_API_KEY;
 
 // For now, we'll keep CoinGecko for coin metadata (names, logos, descriptions)
 // since Binance doesn't provide this. You can later replace with CoinMarketCap or other sources.
 async function fetcher<T>(endpoint: string, revalidate = 60): Promise<T> {
-    const response = await fetch(`${BINANCE_API_BASE}${endpoint}`, {
-        next: { revalidate },
-    });
+    try {
+        const response = await fetch(`${BINANCE_API_BASE}${endpoint}`, {
+            next: { revalidate },
+        });
 
-    if (!response.ok) {
-        throw new Error(`Binance API Error: ${response.status} ${response.statusText}`);
+        if (response.status === 451) {
+            console.warn('Binance.com 451 Restricted, switching to Binance.us');
+            const usResponse = await fetch(`${BINANCE_US_API_BASE}${endpoint}`, {
+                next: { revalidate },
+            });
+
+            if (!usResponse.ok) {
+                throw new Error(`Binance US API Error: ${usResponse.status} ${usResponse.statusText}`);
+            }
+            return usResponse.json();
+        }
+
+        if (!response.ok) {
+            throw new Error(`Binance API Error: ${response.status} ${response.statusText}`);
+        }
+
+        return response.json();
+    } catch (error) {
+        console.error(`Error fetching ${endpoint}:`, error);
+        throw error;
     }
-
-    return response.json();
 }
 
 // Binance symbol mapping (CoinGecko ID to Binance symbol)
@@ -64,9 +83,15 @@ export async function getBinance24hrTicker(symbol: string) {
 
 export async function getAllBinanceTickers() {
     try {
-        const response = await fetch(`${BINANCE_API_BASE}/ticker/24hr`, {
+        let response = await fetch(`${BINANCE_API_BASE}/ticker/24hr`, {
             cache: 'no-store',
         });
+
+        if (response.status === 451) {
+            response = await fetch(`${BINANCE_US_API_BASE}/ticker/24hr`, {
+                cache: 'no-store',
+            });
+        }
 
         if (!response.ok) {
             throw new Error(`Binance API Error: ${response.status}`);
