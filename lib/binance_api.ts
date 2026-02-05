@@ -2,6 +2,9 @@
 
 import { PERIOD_CONFIG } from '@/constants';
 
+const BINANCE_API_BASE = 'https://api.binance.com/api/v3';
+const BINANCE_US_API_BASE = 'https://api.binance.us/api/v3';
+
 export async function getBinanceOHLC(symbol: string, days: number | string): Promise<OHLCData[]> {
     if (!symbol) return [];
 
@@ -34,10 +37,18 @@ export async function getBinanceOHLC(symbol: string, days: number | string): Pro
     }
 
     try {
-        const response = await fetch(
-            `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`,
+        const query = `?symbol=${pair}&interval=${interval}&limit=${limit}`;
+        let response = await fetch(
+            `${BINANCE_API_BASE}/klines${query}`,
             { next: { revalidate: 60 } }
         );
+
+        if (response.status === 451) {
+            response = await fetch(
+                `${BINANCE_US_API_BASE}/klines${query}`,
+                { next: { revalidate: 60 } }
+            );
+        }
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
@@ -65,9 +76,16 @@ export async function getBinanceTicker(symbol: string) {
     const pair = `${symbol.toUpperCase()}USDT`;
 
     try {
-        const response = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${pair}`, {
+        const query = `?symbol=${pair}`;
+        let response = await fetch(`${BINANCE_API_BASE}/ticker/24hr${query}`, {
             next: { revalidate: 60 },
         });
+
+        if (response.status === 451) {
+            response = await fetch(`${BINANCE_US_API_BASE}/ticker/24hr${query}`, {
+                next: { revalidate: 60 },
+            });
+        }
 
         if (!response.ok) {
             console.warn(`Binance Ticker API ${response.status} for ${pair}`);
