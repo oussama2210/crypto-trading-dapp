@@ -64,16 +64,22 @@ export async function getBinance24hrTicker(symbol: string) {
 
 export async function getAllBinanceTickers() {
     try {
-        const tickers = await fetcher<
-            Array<{
-                symbol: string;
-                priceChange: string;
-                priceChangePercent: string;
-                lastPrice: string;
-                volume: string;
-                quoteVolume: string;
-            }>
-        >('/ticker/24hr');
+        const response = await fetch(`${BINANCE_API_BASE}/ticker/24hr`, {
+            cache: 'no-store',
+        });
+
+        if (!response.ok) {
+            throw new Error(`Binance API Error: ${response.status}`);
+        }
+
+        const tickers = await response.json() as Array<{
+            symbol: string;
+            priceChange: string;
+            priceChangePercent: string;
+            lastPrice: string;
+            volume: string;
+            quoteVolume: string;
+        }>;
 
         // Filter only USDT pairs
         return tickers.filter((ticker) => ticker.symbol.endsWith('USDT'));
@@ -91,10 +97,10 @@ export async function getCoinGeckoData<T>(
 ): Promise<T> {
     const queryString = params
         ? '?' +
-          Object.entries(params)
-              .filter(([_, v]) => v !== undefined)
-              .map(([k, v]) => `${k}=${v}`)
-              .join('&')
+        Object.entries(params)
+            .filter(([_, v]) => v !== undefined)
+            .map(([k, v]) => `${k}=${v}`)
+            .join('&')
         : '';
 
     const url = `${COINGECKO_API_BASE}${endpoint}${queryString}`;

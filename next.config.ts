@@ -16,6 +16,18 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "raw.githubusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "assets.coincap.io",
+      },
+      {
+        protocol: "https",
+        hostname: "images.cryptocompare.com",
+      },
+      {
+        protocol: "https",
+        hostname: "resources.cryptocompare.com",
       }
     ]
   }

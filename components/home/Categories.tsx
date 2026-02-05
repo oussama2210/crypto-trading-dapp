@@ -1,34 +1,70 @@
-import { fetcher } from '@/lib/coingecko.actions';
+import { getCryptoCategories } from '@/lib/binance-realtime';
 import DataTable from '@/components/DataTabel';
-import Image from 'next/image';
+import FallbackImage from '@/components/ui/FallbackImage';
 import { cn, formatCurrency, formatPercentage, formatCompactNumber } from '@/lib/utils';
-import { TrendingDown, TrendingUp } from 'lucide-react';
+import { TrendingDown, TrendingUp, Layers } from 'lucide-react';
 import { CategoriesFallback } from './fallback';
+import Link from 'next/link';
+
+interface CategoryData {
+    name: string;
+    slug: string;
+    coins: {
+        symbol: string;
+        name: string;
+        image: string;
+        price: number;
+        priceChangePercent24h: number;
+    }[];
+    marketCap: number;
+    volume24h: number;
+    change24h: number;
+}
 
 const Categories = async () => {
     try {
-        const categories = await fetcher<Category[]>('/coins/categories');
+        const categories = await getCryptoCategories();
 
-        const columns: DataTableColumn<Category>[] = [
-            { header: 'Category', cellClassName: 'category-cell', cell: (category) => category.name },
+        if (!categories || categories.length === 0) {
+            return <CategoriesFallback />;
+        }
+
+        const columns: DataTableColumn<CategoryData>[] = [
             {
-                header: 'Top Gainers',
+                header: 'Category',
+                cellClassName: 'category-cell',
+                cell: (category) => (
+                    <Link href={`/categories/${category.slug}`} className="flex items-center gap-2 hover:text-green-500 transition-colors group">
+                        <Layers className="w-4 h-4 text-purple-100 group-hover:text-green-500 transition-colors" />
+                        {category.name}
+                    </Link>
+                )
+            },
+            {
+                header: 'Top Coins',
                 cellClassName: 'top-gainers-cell',
                 cell: (category) =>
-                    category.top_3_coins.map((coin) => (
-                        <Image src={coin} alt={coin} key={coin} width={28} height={28} />
+                    category.coins.slice(0, 3).map((coin) => (
+                        <FallbackImage
+                            src={coin.image}
+                            alt={coin.symbol}
+                            key={coin.symbol}
+                            width={28}
+                            height={28}
+                            className="rounded-full"
+                        />
                     )),
             },
             {
                 header: '24h Change',
                 cellClassName: 'change-header-cell',
                 cell: (category) => {
-                    const isTrendingUp = category.market_cap_change_24h > 0;
+                    const isTrendingUp = category.change24h > 0;
 
                     return (
                         <div className={cn('change-cell', isTrendingUp ? 'text-green-500' : 'text-red-500')}>
                             <p className="flex items-center">
-                                {formatPercentage(category.market_cap_change_24h)}
+                                {isTrendingUp ? '+' : ''}{category.change24h.toFixed(2)}%
                                 {isTrendingUp ? (
                                     <TrendingUp width={16} height={16} />
                                 ) : (
@@ -42,23 +78,27 @@ const Categories = async () => {
             {
                 header: 'Market Cap',
                 cellClassName: 'market-cap-cell',
-                cell: (category) => formatCompactNumber(category.market_cap),
+                cell: (category) => formatCompactNumber(category.marketCap),
             },
             {
                 header: '24h Volume',
                 cellClassName: 'volume-cell',
-                cell: (category) => formatCurrency(category.volume_24h),
+                cell: (category) => formatCurrency(category.volume24h),
             },
         ];
 
         return (
             <div id="categories" className="custom-scrollbar">
-                <h4>Top Categories</h4>
+                <h4 className="flex items-center gap-2">
+                    <Layers className="w-6 h-6 text-purple-100" />
+                    Top Categories
+                    <span className="text-sm font-normal text-purple-100 ml-2">(Real-time)</span>
+                </h4>
 
                 <DataTable
                     columns={columns}
-                    data={categories?.slice(0, 10)}
-                    rowKey={(_, index) => index}
+                    data={categories as CategoryData[]}
+                    rowKey={(category, index) => `${category.name}-${index}`}
                     tableClassName="mt-3"
                 />
             </div>

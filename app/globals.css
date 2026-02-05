@@ -128,20 +128,20 @@
   --sidebar-ring: oklch(0.556 0 0);
 
   /* Brand colors */
-  --dark-900: #000510;
-  --dark-700: #0f1316;
-  --dark-500: #1a2027;
-  --dark-400: #1e2833;
+  --dark-900: #000000;
+  --dark-700: #0a0a0a;
+  --dark-500: #111111;
+  --dark-400: #1a1a1a;
 
-  --purple-600: #1b254b;
-  --purple-100: #a3aed0;
+  --purple-600: #1e40af;
+  --purple-100: #93c5fd;
 
-  --green-500: #76da44;
-  --green-400: #2ebe7b;
-  --green-300: #99e39e;
+  --green-500: #3b82f6;
+  --green-400: #2563eb;
+  --green-300: #60a5fa;
 
-  --red-500: #ff685f;
-  --yellow-500: #dabe44;
+  --red-500: #ef4444;
+  --yellow-500: #eab308;
 }
 
 @layer base {
@@ -180,28 +180,49 @@
   }
 
   header {
-    @apply border-b border-dark-400 h-20;
+    @apply border-b border-dark-400/60 h-16 md:h-20 backdrop-blur-md bg-dark-700/90 sticky top-0 z-50;
+    transition: all 0.3s ease;
 
     .inner {
-      @apply flex justify-between items-center h-full;
+      @apply flex justify-between items-center h-full gap-2;
 
       a {
-        @apply mb-0;
+        @apply mb-0 transition-transform hover:scale-105;
       }
 
       nav {
         @apply flex h-full items-center;
 
         .nav-link {
-          @apply px-6 py-5 flex items-center transition-all hover:text-white font-medium h-full text-purple-100 cursor-pointer;
+          @apply px-3 md:px-6 py-3 md:py-5 flex items-center transition-all hover:text-white font-medium h-full text-purple-100 cursor-pointer relative;
+          
+          &::after {
+            content: '';
+            @apply absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-green-500 to-green-400 transition-all duration-300 rounded-full;
+          }
+          
+          &:hover::after {
+            @apply w-2/3;
+          }
         }
 
         .nav-link.is-active {
           @apply text-white;
+          
+          &::after {
+            @apply w-2/3;
+          }
         }
 
         .nav-link.is-home {
-          @apply max-sm:hidden;
+          @apply max-md:hidden;
+        }
+
+        /* Hide some nav items on smaller screens */
+        @media (max-width: 768px) {
+          .nav-link:not(.is-active):nth-child(n+4) {
+            @apply hidden;
+          }
         }
       }
     }
@@ -970,6 +991,74 @@
 
 .custom-scrollbar [data-slot='table-container']::-webkit-scrollbar-thumb:hover {
   background: #171a34;
+}
+
+/* Live Price Ticker Styles */
+.live-price-ticker {
+  @apply w-full space-y-4;
+
+  .ticker-header {
+    @apply flex justify-between items-center;
+
+    h4 {
+      @apply text-xl md:text-2xl font-semibold;
+    }
+
+    .live-badge {
+      @apply flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-500;
+    }
+
+    .live-dot {
+      @apply w-2 h-2 rounded-full bg-green-500 animate-pulse;
+    }
+  }
+
+  .ticker-grid {
+    @apply grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3;
+  }
+
+  .ticker-card {
+    @apply p-4 rounded-xl border border-dark-400/40 transition-all cursor-pointer;
+    background: linear-gradient(145deg, rgba(26, 32, 39, 0.8) 0%, rgba(15, 19, 22, 0.9) 100%);
+
+    &:hover {
+      @apply border-green-500/30;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), 0 0 20px rgba(118, 218, 68, 0.1);
+    }
+
+    .ticker-info {
+      @apply flex items-center gap-3 mb-3;
+    }
+
+    .ticker-price {
+      @apply flex justify-between items-center;
+    }
+  }
+}
+
+/* Real-time price flash animations */
+.price-flash-up {
+  animation: flashGreen 0.5s ease-out;
+}
+
+.price-flash-down {
+  animation: flashRed 0.5s ease-out;
+}
+
+@keyframes flashGreen {
+  0% { background-color: rgba(118, 218, 68, 0.3); }
+  100% { background-color: transparent; }
+}
+
+@keyframes flashRed {
+  0% { background-color: rgba(239, 68, 68, 0.3); }
+  100% { background-color: transparent; }
+}
+
+/* Realtime price component styles */
+.realtime-price {
+  @apply flex flex-col gap-1;
 }
 
 @layer base {

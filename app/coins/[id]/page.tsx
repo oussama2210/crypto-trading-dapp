@@ -1,10 +1,11 @@
 import React from 'react';
 import { getBinanceOHLC, getBinanceTicker } from '@/lib/binance_api';
 import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, TrendingUp, TrendingDown, Activity, BarChart3 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import LiveDataWrapper from '@/components/LiveDataWrapper';
 import Converter from '@/components/Converter';
+import TokenSwap from '@/components/TokenSwap';
 
 const COIN_MAPPING: Record<string, string> = {
     'bitcoin': 'BTC',
@@ -26,6 +27,9 @@ const Page = async ({ params }: NextPageProps) => {
         getBinanceTicker(symbol),
         getBinanceOHLC(symbol, 1),
     ]);
+
+    const priceChange = tickerData ? parseFloat(tickerData.priceChangePercent) : 0;
+    const isPositive = priceChange >= 0;
 
     // Synthesize coinData from Binance ticker
     const coinData: CoinDetailsData = {
@@ -58,26 +62,33 @@ const Page = async ({ params }: NextPageProps) => {
         {
             label: '24h High',
             value: tickerData ? formatCurrency(parseFloat(tickerData.highPrice)) : '-',
+            icon: <TrendingUp className="w-4 h-4 text-green-500" />,
         },
         {
             label: '24h Low',
             value: tickerData ? formatCurrency(parseFloat(tickerData.lowPrice)) : '-',
+            icon: <TrendingDown className="w-4 h-4 text-red-500" />,
         },
         {
             label: '24h Volume',
             value: tickerData ? formatCurrency(parseFloat(tickerData.quoteVolume)) : '-',
+            icon: <Activity className="w-4 h-4 text-purple-100" />,
         },
         {
             label: 'Price Change',
-            value: tickerData ? `${tickerData.priceChangePercent}%` : '-',
+            value: tickerData ? `${isPositive ? '+' : ''}${tickerData.priceChangePercent}%` : '-',
+            icon: <BarChart3 className={`w-4 h-4 ${isPositive ? 'text-green-500' : 'text-red-500'}`} />,
+            isChange: true,
         },
         {
             label: 'Trading Pair',
             value: `${symbol}/USDT`,
+            icon: null,
         },
         {
             label: 'Source',
             value: 'Binance API',
+            icon: null,
         },
     ];
 
@@ -92,6 +103,9 @@ const Page = async ({ params }: NextPageProps) => {
             </section>
 
             <section className="secondary">
+                {/* Token Swap Component */}
+                <TokenSwap chainId={1} />
+
                 <Converter
                     symbol={coinData.symbol}
                     icon={coinData.image.small}
@@ -102,10 +116,15 @@ const Page = async ({ params }: NextPageProps) => {
                     <h4>Market Statistics</h4>
 
                     <ul className="details-grid">
-                        {coinDetails.map(({ label, value }, index) => (
-                            <li key={index}>
-                                <p className={label}>{label}</p>
-                                <p className="text-base font-medium">{value}</p>
+                        {coinDetails.map(({ label, value, icon, isChange }, index) => (
+                            <li key={index} className="glass-card">
+                                <div className="flex items-center gap-2">
+                                    {icon}
+                                    <p className="label">{label}</p>
+                                </div>
+                                <p className={`text-base font-medium ${isChange ? (isPositive ? 'text-green-500' : 'text-red-500') : ''}`}>
+                                    {value}
+                                </p>
                             </li>
                         ))}
                     </ul>

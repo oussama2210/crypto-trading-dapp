@@ -1,32 +1,39 @@
-import { fetcher } from '@/lib/coingecko.actions';
+import { getTrendingCoins, type TopCoin } from '@/lib/binance-realtime';
 import Link from 'next/link';
-import Image from 'next/image';
+import FallbackImage from '@/components/ui/FallbackImage';
 import { cn, formatCurrency, formatPercentage } from '@/lib/utils';
-import { TrendingDown, TrendingUp } from 'lucide-react';
+import { TrendingDown, TrendingUp, Flame } from 'lucide-react';
 import DataTable from '@/components/DataTabel';
 import { TrendingCoinsFallback } from './fallback';
 
 const TrendingCoins = async () => {
-    let trendingCoins;
+    let trendingCoins: TopCoin[] = [];
 
     try {
-        trendingCoins = await fetcher<{ coins: TrendingCoin[] }>('/search/trending', undefined, 300);
+        trendingCoins = await getTrendingCoins(8);
     } catch (error) {
         console.error('Error fetching trending coins:', error);
         return <TrendingCoinsFallback />;
     }
 
-    const columns: DataTableColumn<TrendingCoin>[] = [
+    if (trendingCoins.length === 0) {
+        return <TrendingCoinsFallback />;
+    }
+
+    const columns: DataTableColumn<TopCoin>[] = [
         {
             header: 'Name',
             cellClassName: 'name-cell',
             cell: (coin) => {
-                const item = coin.item;
-
                 return (
-                    <Link href={`/coins/${item.id}`}>
-                        <Image src={item.large} alt={item.name} width={36} height={36} />
-                        <p>{item.name}</p>
+                    <Link href={`/coins/${coin.id}`}>
+                        <FallbackImage
+                            src={coin.image}
+                            alt={coin.name}
+                            width={36}
+                            height={36}
+                        />
+                        <p>{coin.name}</p>
                     </Link>
                 );
             },
@@ -35,13 +42,12 @@ const TrendingCoins = async () => {
             header: '24h Change',
             cellClassName: 'change-cell',
             cell: (coin) => {
-                const item = coin.item;
-                const isTrendingUp = item.data.price_change_percentage_24h.usd > 0;
+                const isTrendingUp = coin.priceChangePercent24h > 0;
 
                 return (
                     <div className={cn('price-change', isTrendingUp ? 'text-green-500' : 'text-red-500')}>
                         <p className="flex items-center">
-                            {formatPercentage(item.data.price_change_percentage_24h.usd)}
+                            {formatPercentage(coin.priceChangePercent24h)}
                             {isTrendingUp ? (
                                 <TrendingUp width={16} height={16} />
                             ) : (
@@ -55,18 +61,22 @@ const TrendingCoins = async () => {
         {
             header: 'Price',
             cellClassName: 'price-cell',
-            cell: (coin) => formatCurrency(coin.item.data.price),
+            cell: (coin) => formatCurrency(coin.price),
         },
     ];
 
     return (
         <div id="trending-coins">
-            <h4>Trending Coins</h4>
+            <h4 className="flex items-center gap-2">
+                <Flame className="w-6 h-6 text-orange-500" />
+                Trending Coins
+                <span className="text-sm font-normal text-purple-100 ml-2">(Real-time)</span>
+            </h4>
 
             <DataTable
-                data={trendingCoins.coins.slice(0, 6) || []}
+                data={trendingCoins}
                 columns={columns}
-                rowKey={(coin) => coin.item.id}
+                rowKey={(coin) => coin.symbol}
                 tableClassName="trending-coins-table"
                 headerCellClassName="py-3!"
                 bodyCellClassName="py-2!"
