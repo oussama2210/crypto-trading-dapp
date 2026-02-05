@@ -1,111 +1,81 @@
-# Ceypto - Advanced Cryptocurrency Dashboard
+# Ceypto - Next-Gen Crypto Analytics Platform
 
-![Ceypto Dashboard](public/screenshot-placeholder.png)
+![Next.js](https://img.shields.io/badge/Next.js_16-black?style=for-the-badge&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React_19-20232a?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Binance API](https://img.shields.io/badge/Binance_Data-F0B90B?style=for-the-badge&logo=binance&logoColor=black)
 
-Ceypto is a state-of-the-art, real-time cryptocurrency dashboard designed for traders, investors, and crypto enthusiasts. Built with modern web technologies, it delivers a premium, high-performance experience with live market data, interactive charts, and comprehensive asset tracking.
+**Ceypto** is a high-performance, real-time cryptocurrency dashboard built for the modern web. It leverages **Next.js 16 (App Router)** and **Tailwind CSS v4** to deliver an immersive, lightning-fast experience for tracking markets, analyzing assets, and monitoring portfolios.
 
-## 🚀 Features
+## ✨ Key Features
 
-### 1. **Real-Time Market Data**
-   - **Live Price Tracking**: Real-time price updates for top cryptocurrencies (BTC, ETH, SOL, etc.) powered by Binance API.
-   - **Dynamic Tickers**: Live price ticker bar with 24h change indicators.
-   - **Top Gainers & Losers**: Automatically identifies and displays significant market movers.
-   - **Trending Assets**: Algo-driven identification of trending coins based on volume and momentum.
+### 1. 📊 Real-Time Market Intelligence
+- **Live Tickers**: Instant price updates powered by direct Binance API integration.
+- **Smart Fallback System**: Automatically switches between `Binance.com` and `Binance.us` APIs to ensure global availability (including restricted regions like the US).
+- **Trend Discovery**: Algo-driven identification of **Top Gainers**, **Losers**, and **Trending** coins based on 24h volume and momentum.
 
-### 2. **Advanced Analytics & Charts**
-   - **Interactive Candlestick Charts**: Professional-grade charts with customizable timeframes (1H, 4H, 1D, 1W, etc.).
-   - **Technical Indicators**: Visual indicators for market trends (Bullish/Bearish signals).
-   - **Deep Dive Data**: Detailed metrics including Market Cap, 24h Volume, High/Low stats, and Circulating Supply.
+### 2. 📈 Professional Charting
+- **Interactive OHLC Candles**: Powered by `lightweight-charts` for smooth, responsive financial plotting.
+- **Multi-Frame Analysis**: Switch seamlessly between 1H, 1D, 1W, and Yearly views.
+- **Deep Metrics**: Visual indicators for Volume, Market Cap, Supply, and Price Changes.
 
-### 3. **Crypto Intelligence & News**
-   - **Aggregated News Feed**: A dedicated news section pulling the latest stories from top crypto publishers via CryptoCompare.
-   - **Detailed Article View**: Immersive reading experience with rich metadata, source attribution, and direct links to original content.
-   - **Sentiment Analysis**: Integration of upvote/downvote statistics to gauge community sentiment.
+### 3. 📰 Crypto News & Sentiment
+- **Aggregated Feed**: Curated news from top industry publishers.
+- **Sentiment Analysis**: Tracks community engagement (Upvotes/Downvotes) on news stories.
+- **Rich Reading Mode**: Distraction-free article viewer with source attribution.
 
-### 4. **Portfolio Management**
-   - **Wallet Connection**: Seamless Web3 integration using WalletConnect for secure wallet linking.
-   - **Asset Tracking**: Personalized portfolio view showing current holdings, total balance, and P&L (Profit & Loss).
-   - **Simulated Trading**: (Demo Mode) Experience portfolio management with simulated assets and real-time valuation updates.
+### 4. 💼 Ecosystem Explorer
+- **Sector Analysis**: Dedicated views for market segments like **Layer 1**, **DeFi**, **AI & Big Data**, and **Meme Coins**.
+- **Dynamic Categories**: Automatically aggregates and calculates market cap/volume for entire crypto sectors.
 
-### 5. **Ecosystem Explorer**
-   - **Category Deep Dives**: Explore specific crypto sectors like Layer 1, DeFi, Meme Coins, AI & Big Data.
-   - **Compare & Contrast**: Dedicated views for comparing tokens within the same ecosystem.
-
-## 🛠️ Technology Stack
-
-Ceypto is architected for speed, scalability, and developer experience.
-
-### **Core Framework**
-- **[Next.js 15](https://nextjs.org/)**: The React framework for the web, utilizing App Router for robust routing and Server Components for optimal performance and SEO.
-- **[React 19](https://react.dev/)**: The latest library for building interactive user interfaces.
-- **[TypeScript](https://www.typescriptlang.org/)**: For static type checking, ensuring code reliability and maintainability.
-
-### **Styling & Design System**
-- **[Tailwind CSS v4](https://tailwindcss.com/)**: A utility-first CSS framework for rapid UI development.
-- **[Lucide React](https://lucide.dev/)**: Beuatiful, consistent icon set.
-- **Custom Design System**: A bespoke "Dark Mode" aesthetic featuring:
-    - **Color Palette**: Sophisticated Deep Blue (`#000000`/`#0a0a0a`) background with Electric Blue (`#3b82f6`) and Neon Green accents.
-    - **Glassmorphism**: Subtle translucency and blur effects for a modern, layered depth.
-    - **Responsive Layouts**: Mobile-first design ensuring a perfect experience on all devices.
-
-### **Data & APIs**
-- **[Binance API](https://binance.com/)**: Primary source for real-time price feeds, ticker data, and complex market stats.
-- **[CryptoCompare API](https://min-api.cryptocompare.com/)**: Source for aggregated cryptocurrency news and media.
-- **[CoinCap API](https://coincap.io/)**: Provides high-quality vector assets and icons for thousands of tokens.
-
-### **State Management & Web3**
-- **WalletConnect**: Standard protocol for connecting decentralized applications to mobile wallets.
-- **React Hooks**: Custom hooks for managing websocket connections, wallet state, and fetching logic.
-
-## 🎨 Design Philosophy
-
-The design of Ceypto is centered around **"Data Clarity in Dark Mode"**.
-- **Visual Hierarchy**: Critical data (Price, Change %) is highlighted with bold typography and color-coded indicators (Green/Red).
-- **Immersive Environment**: The dark theme reduces eye strain during long trading sessions while allowing vibrant accent colors to pop, drawing attention to actionable insights.
-- **Micro-Interactions**: Subtle hover effects, smooth transitions, and skeleton loading states create a polished, responsive feel.
-
-## 🔧 Installation & Setup
-
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/your-username/ceypto.git
-    cd ceypto
-    ```
-
-2.  **Install dependencies:**
-    ```bash
-    npm install
-    # or
-    yarn install
-    ```
-
-3.  **Run the development server:**
-    ```bash
-    npm run dev
-    ```
-
-4.  **Open your browser:**
-    Navigate to [http://localhost:3000](http://localhost:3000) to view the application.
-
-## 📂 Project Structure
-
-```bash
-/app
-  ├── /categories   # Dynamic category explorer pages
-  ├── /news         # News feed and detailed article pages
-  ├── /portfolio    # User portfolio and wallet management
-  ├── globals.css   # Global styles and Tailwind configuration
-  └── page.tsx      # Main dashboard landing page
-/components
-  ├── /home         # Dashboard specific components (Ticker, Lists)
-  ├── /ui           # Reusable UI primitives (Buttons, Badges)
-  └── Header.tsx    # Main navigation and layout header
-/lib
-  ├── binance-api.ts # Binance API integration services
-  ├── news-api.ts    # News fetching services
-  └── walletconnect  # Web3 configuration
-```
+### 5. 🔗 Wallet & Portfolio (Web3)
+- **WalletConnect Integration**: Securely connect mobile wallets using the Reown/WalletKit protocol.
+- **Portfolio Tracking**: Monitor asset values and P&L in real-time.
 
 ---
 
-*Ceypto is a demonstration of modern web engineering capabilities, designed to showcase the potential of Next.js in building complex, data-intensive financial applications.*
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js 16.1](https://nextjs.org/) (App Router, Server Actions)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) & [Lucide Icons](https://lucide.dev/)
+- **State & UI**: [React 19](https://react.dev/), Radix UI Primitives
+- **Data Visualization**: [Lightweight Charts](https://tradingview.github.io/lightweight-charts/)
+- **Web3**: [Reown AppKit (WalletConnect)](https://reown.com/) & [Wagmi](https://wagmi.sh/)
+- **Data Providers**: Binance API (Price), CryptoCompare (News), CoinCap (Assets)
+
+---
+
+## 🚀 Getting Started
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/ceypto.git
+   cd ceypto
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment**
+   Create a `.env` file in the root directory (optional for public APIs, but recommended for WalletConnect):
+   ```env
+   NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=your_project_id_here
+   ```
+
+4. **Run the Development Server**
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
