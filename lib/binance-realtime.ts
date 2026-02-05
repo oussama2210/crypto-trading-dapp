@@ -75,10 +75,15 @@ export async function getMultipleTickers(symbols: string[] = TOP_SYMBOLS): Promi
             next: { revalidate: 10 },
         });
 
+        let isFallback = false;
+
         if (response.status === 451) {
-            response = await fetch(`${BINANCE_US_API_URL}/ticker/24hr${query}`, {
+            // Fallback to US API - Fetch ALL tickers to avoid "Invalid Symbol" 400 error
+            // if one of the requested symbols is not supported on US.
+            response = await fetch(`${BINANCE_US_API_URL}/ticker/24hr`, {
                 next: { revalidate: 10 },
             });
+            isFallback = true;
         }
 
         if (!response.ok) {
@@ -87,8 +92,15 @@ export async function getMultipleTickers(symbols: string[] = TOP_SYMBOLS): Promi
         }
 
         const data = await response.json();
-        // Binance returns an array for 'symbols' query, but check just in case
-        return Array.isArray(data) ? data : [data];
+
+        let tickers = Array.isArray(data) ? data : [data];
+
+        if (isFallback) {
+            const targetSet = new Set(targetSymbols);
+            tickers = tickers.filter(t => targetSet.has(t.symbol));
+        }
+
+        return tickers;
     } catch (error) {
         console.error('Error fetching Binance tickers:', error);
         return [];
